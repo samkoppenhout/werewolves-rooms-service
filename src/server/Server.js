@@ -22,7 +22,7 @@ export default class Server {
     };
 
     start() {
-        this.#app.use(cors({ origin: "http://localhost:5173" }));
+        this.#app.use(cors({ origin: "http://localhost:3003" }));
         this.#app.use(morgan("tiny"));
         this.#app.use(express.json());
         this.#app.use(express.urlencoded({ extended: true }));

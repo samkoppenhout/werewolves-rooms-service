@@ -60,8 +60,7 @@ export default class RoomsService {
     };
 
     leaveRoom = async (id) => {
-        console.log(id);
-        return await Rooms.findOneAndUpdate(
+        const room = await Rooms.findOneAndUpdate(
             { "players.user_id": id },
             {
                 $pull: {
@@ -70,6 +69,8 @@ export default class RoomsService {
             },
             { new: true }
         );
+        if (!room) throw new Error("Room not found!");
+        return room;
     };
 
     startGame = async (id, settings) => {
@@ -86,6 +87,7 @@ export default class RoomsService {
         }
         await this.#assignRoles(id);
         room = await this.#updateInProgressOnStart(id);
+
         return room;
     };
 
@@ -114,20 +116,27 @@ export default class RoomsService {
         if (!room) {
             ownedRoom = await Rooms.findOne({ owner_id: id });
         }
-        if (ownedRoom) {
+
+        if (ownedRoom && !ownedRoom.in_progress) {
             throw new Error("Game has not started!");
+        } else if (ownedRoom) {
+            throw new Error("Owner is not playing!");
         }
+
         if (!room) {
             throw new Error("Player is not in a room!");
         }
+
         if (!room.in_progress) {
             throw new Error("Game has not started!");
         }
+
         room.players.forEach((player) => {
             if (player.user_id === id) {
                 role = player.game_role;
             }
         });
+
         return role;
     };
 
@@ -225,7 +234,6 @@ export default class RoomsService {
 
     #addOwner = async (room) => {
         try {
-            console.log(room);
             await this.joinRoom(
                 room.room_code,
                 room.owner_id,
@@ -240,7 +248,7 @@ export default class RoomsService {
         try {
             await this.leaveRoom(room.owner_id);
         } catch (e) {
-            throw new Error("Error removing owner from room!");
+            throw new Error("Error removing owner from room: " + e.message);
         }
     };
 

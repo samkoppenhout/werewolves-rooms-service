@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import sinon from "sinon";
 
-import RoomsController from "../src/controllers/Rooms.controller.js";
+import RoomsController from "../../src/controllers/Rooms.controller.js";
 
 describe("Rooms.controller tests", async () => {
     let roomsController;
